@@ -99,9 +99,22 @@ def load_fertilizer_model():
 # -------- Regional Dataset Loading --------
 @st.cache_data
 def load_regional_data():
-    return pd.read_csv("../Models/Crop_Recommandation/Dataset/Regional_Data.csv") 
+    try:
+        csv_path = os.path.join(
+            BASE_DIR,
+            "Models",
+            "Crop_Recommandation",
+            "Dataset",
+            "Regional_Data.csv"
+        )
 
-regional_df = load_regional_data()
+        return pd.read_csv(csv_path)
+
+    except Exception as e:
+        st.error("❌ ERROR LOADING REGIONAL DATA")
+        st.exception(e)
+        return pd.DataFrame()
+
 
 
 
