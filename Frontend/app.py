@@ -61,13 +61,36 @@ def load_crop_model():
 # -------- Fertilizer Model Loading --------
 @st.cache_resource
 def load_fertilizer_model():
-    model = pickle.load(open("../Models/All_Trained_Models/fertilizer_recommendation.pkl", "rb"))
-    with open("../Models/Fertilizer_Recommandation/Model/fert_mapping.json") as f:
-        fert_mapping = json.load(f)
-    fert_mapping = {int(k): v for k, v in fert_mapping.items()}
-    return model, fert_mapping
+    try:
+        model_path = os.path.join(
+            BASE_DIR,
+            "Models",
+            "All_Trained_Models",
+            "fertilizer_recommendation.pkl"
+        )
 
-fert_model, fert_mapping = load_fertilizer_model()
+        mapping_path = os.path.join(
+            BASE_DIR,
+            "Models",
+            "Fertilizer_Recommandation",
+            "Model",
+            "fert_mapping.json"
+        )
+
+        model = pickle.load(open(model_path, "rb"))
+
+        with open(mapping_path) as f:
+            fert_mapping = json.load(f)
+
+        fert_mapping = {int(k): v for k, v in fert_mapping.items()}
+
+        return model, fert_mapping
+
+    except Exception as e:
+        st.error("❌ ERROR LOADING FERTILIZER MODEL")
+        st.exception(e)
+        return None, None
+
 
 
 
