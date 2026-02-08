@@ -4,7 +4,6 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
 import json
 from PIL import Image
-import ollama
 import pandas as pd
 import pickle
 from sklearn.ensemble import RandomForestClassifier
