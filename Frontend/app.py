@@ -91,7 +91,7 @@ regional_df = load_regional_data()
 
 from groq import Groq
 
-client = Groq(api_key="")  # API key read from env variable
+client = Groq(api_key="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")  # API key read from env variable
 
 
 # ===== Chat session state =====
