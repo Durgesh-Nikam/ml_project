@@ -8,19 +8,25 @@ import pandas as pd
 import pickle
 from sklearn.ensemble import RandomForestClassifier
 from keras.models import load_model
+import os
+
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+
+MODEL_PATH = os.path.join(
+    BASE_DIR,
+    "Models",
+    "Disease",
+    "plant_disease_model.keras"
+)
 
 
 # # -------- Disease Model Loading --------
 @st.cache_resource
 def load_cnn_model():
     try:
-        model = load_model(
-            r"../Models/Disease/plant_disease_model.keras",
-            compile=False,
-            safe_mode=False
-        )
+        model = load_model(MODEL_PATH, compile=False)
 
-        with open("../Models/Disease/class_indices.json", "r") as f:
+        with open(os.path.join(BASE_DIR, "Models", "Disease", "class_indices.json")) as f:
             class_indices = json.load(f)
 
         inv_class_indices = {v: k for k, v in class_indices.items()}
@@ -30,27 +36,24 @@ def load_cnn_model():
         st.error("❌ ERROR LOADING CNN MODEL")
         st.exception(e)
         return None, None
-    
-model, inv_class_indices = load_cnn_model()
+
 
 
 
 
 
 # -------- Crop Model Loading --------
-@st.cache_resource
 def load_crop_model():
     model = pickle.load(
-        open("../Models/Crop_Recommandation/crop_model.pkl", "rb")
+        open(os.path.join(BASE_DIR, "Models", "Crop_Recommandation", "crop_model.pkl"), "rb")
     )
 
-    with open("../Models/Crop_Recommandation/crop_mapping.json", "r") as f:
+    with open(os.path.join(BASE_DIR, "Models", "Crop_Recommandation", "crop_mapping.json")) as f:
         crop_mapping = json.load(f)
 
     crop_mapping = {int(k): v for k, v in crop_mapping.items()}
     return model, crop_mapping
 
-crop_model, crop_mapping = load_crop_model()
 
 
 
