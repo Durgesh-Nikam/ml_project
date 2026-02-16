@@ -1,3 +1,49 @@
+Hugging Face's logo
+Hugging Face
+Models
+Datasets
+Spaces
+Community
+Docs
+Enterprise
+Pricing
+
+
+Spaces:
+durgesh1919
+/
+smartagrocare-ai
+
+
+like
+0
+
+Logs
+App
+Files
+Community
+Settings
+smartagrocare-ai
+/
+src
+/
+streamlit_app.py
+
+durgesh1919's picture
+durgesh1919
+Update src/streamlit_app.py
+eeae5c2
+verified
+2 days ago
+raw
+
+Copy download link
+history
+blame
+edit
+delete
+
+13.5 kB
 import streamlit as st
 import numpy as np
 from tensorflow.keras.models import load_model
@@ -9,28 +55,89 @@ import pickle
 from sklearn.ensemble import RandomForestClassifier
 from keras.models import load_model
 import os
+import tensorflow as tf
 
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+BASE_DIR = os.path.dirname(__file__)
+
+
+# MODEL_PATH = os.path.join(
+#     BASE_DIR,
+#     "Models",
+#     "Disease",
+#     "plant_disease_model.keras"
+# )
 
 MODEL_PATH = os.path.join(
     BASE_DIR,
     "Models",
-    "Disease",
-    "plant_disease_model.keras"
+    "Disease"
 )
 
 
 # # -------- Disease Model Loading --------
+# @st.cache_resource
+# def load_cnn_model():
+#     try:
+#         model = load_model(MODEL_PATH, compile=False)
+
+#         with open(os.path.join(BASE_DIR, "Models", "Disease", "class_indices.json")) as f:
+#             class_indices = json.load(f)
+
+#         inv_class_indices = {v: k for k, v in class_indices.items()}
+#         return model, inv_class_indices
+
+#     except Exception as e:
+#         st.error("❌ ERROR LOADING CNN MODEL")
+#         st.exception(e)
+#         return None, None
 @st.cache_resource
 def load_cnn_model():
     try:
-        model = load_model(MODEL_PATH, compile=False)
+        model = tf.keras.models.load_model(MODEL_PATH)
 
-        with open(os.path.join(BASE_DIR, "Models", "Disease", "class_indices.json")) as f:
-            class_indices = json.load(f)
+        # Manual class names (PlantVillage 38 classes)
+        class_names = [
+            'Apple___Apple_scab',
+            'Apple___Black_rot',
+            'Apple___Cedar_apple_rust',
+            'Apple___healthy',
+            'Blueberry___healthy',
+            'Cherry_(including_sour)___healthy',
+            'Cherry_(including_sour)___Powdery_mildew',
+            'Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot',
+            'Corn_(maize)___Common_rust_',
+            'Corn_(maize)___healthy',
+            'Corn_(maize)___Northern_Leaf_Blight',
+            'Grape___Black_rot',
+            'Grape___Esca_(Black_Measles)',
+            'Grape___healthy',
+            'Grape___Leaf_blight_(Isariopsis_Leaf_Spot)',
+            'Orange___Haunglongbing_(Citrus_greening)',
+            'Peach___Bacterial_spot',
+            'Peach___healthy',
+            'Pepper,_bell___Bacterial_spot',
+            'Pepper,_bell___healthy',
+            'Potato___Early_blight',
+            'Potato___healthy',
+            'Potato___Late_blight',
+            'Raspberry___healthy',
+            'Soybean___healthy',
+            'Squash___Powdery_mildew',
+            'Strawberry___healthy',
+            'Strawberry___Leaf_scorch',
+            'Tomato___Bacterial_spot',
+            'Tomato___Early_blight',
+            'Tomato___healthy',
+            'Tomato___Late_blight',
+            'Tomato___Leaf_Mold',
+            'Tomato___Septoria_leaf_spot',
+            'Tomato___Spider_mites Two-spotted_spider_mite',
+            'Tomato___Target_Spot',
+            'Tomato___Tomato_mosaic_virus',
+            'Tomato___Tomato_Yellow_Leaf_Curl_Virus'
+        ]
 
-        inv_class_indices = {v: k for k, v in class_indices.items()}
-        return model, inv_class_indices
+        return model, class_names
 
     except Exception as e:
         st.error("❌ ERROR LOADING CNN MODEL")
@@ -119,7 +226,13 @@ def load_regional_data():
 
 # -------- Load All Models --------
 
-model, inv_class_indices = load_cnn_model()
+# model, inv_class_indices = load_cnn_model()
+
+
+
+
+model, class_names = load_cnn_model()
+
 crop_model, crop_mapping = load_crop_model()
 fert_model, fert_mapping = load_fertilizer_model()
 regional_df = load_regional_data()
@@ -136,9 +249,18 @@ regional_df = load_regional_data()
 from groq import Groq
 import os
 
-client = Groq(
-    api_key=st.secrets.get("GROQ_API_KEY") or os.getenv("GROQ_API_KEY")
-)
+api_key = None
+
+try:
+    api_key = st.secrets["GROQ_API_KEY"]
+except:
+    api_key = os.getenv("GROQ_API_KEY")
+
+if api_key:
+    client = Groq(api_key=api_key)
+else:
+    client = None
+
 
 # ===== Chat session state =====
 if "messages" not in st.session_state:
@@ -214,6 +336,8 @@ with tab1:
         image_pil = Image.open(uploaded_file)
         st.image(image_pil, caption="Uploaded Image", width=250)
         img = image_pil.resize((128, 128))
+        # img = image_pil.resize((224, 224))
+
         img_array = image.img_to_array(img) / 255.0
         img_array = np.expand_dims(img_array, axis=0)
 
@@ -224,19 +348,38 @@ with tab1:
             else:
                 prediction = model.predict(img_array)
                 predicted_class_index = np.argmax(prediction)
-                predicted_class_name = inv_class_indices[predicted_class_index]
+                # predicted_class_name = inv_class_indices[predicted_class_index]
+               
+                predicted_class_name = class_names[predicted_class_index]
+
+
                 confidence = np.max(prediction)
 
                 st.success(f"🧠 Predicted Disease: **{predicted_class_name}**")
                 st.info(f"Confidence: {confidence:.2f}")
-                with st.spinner("🔍 Getting disease info from expert..."):
-                    if not st.session_state.auto_explained:
-                        auto_prompt = (
-                            f"Explain the plant disease {predicted_class_name} "
-                            "with causes, symptoms, treatment and prevention."
-                        )
-                        get_disease_info_chat(auto_prompt, language)
-                        st.session_state.auto_explained = True
+                if client:
+                    with st.spinner("🔍 Getting disease info from expert..."):
+                        if not st.session_state.auto_explained:
+                            auto_prompt = (
+                                f"Explain the plant disease {predicted_class_name} "
+                                "with causes, symptoms, treatment and prevention."
+                            )
+
+                            response = get_disease_info_chat(auto_prompt, language)
+                            st.write(response)
+
+                            st.session_state.auto_explained = True
+                else:
+                    st.warning("⚠️ AI assistant unavailable.")
+
+                # with st.spinner("🔍 Getting disease info from expert..."):
+                #     if not st.session_state.auto_explained:
+                #         auto_prompt = (
+                #             f"Explain the plant disease {predicted_class_name} "
+                #             "with causes, symptoms, treatment and prevention."
+                #         )
+                #         get_disease_info_chat(auto_prompt, language)
+                #         st.session_state.auto_explained = True
 
 
     # ================= CHAT UI =================
@@ -349,6 +492,12 @@ with tab3:
         fertilizer_name = fert_mapping.get(fert_pred, "Unknown")
 
         st.success(f"🧪 Recommended Fertilizer: **{fertilizer_name}**")
+
+
+
+
+
+
 
 
 # import streamlit as st
@@ -470,6 +619,12 @@ with tab3:
 
 
 
+# # -------- Load All Models --------
+
+# model, inv_class_indices = load_cnn_model()
+# crop_model, crop_mapping = load_crop_model()
+# fert_model, fert_mapping = load_fertilizer_model()
+# regional_df = load_regional_data()
 
 
 
@@ -481,9 +636,11 @@ with tab3:
 # # 
 
 # from groq import Groq
+# import os
 
-# client = Groq(api_key=st.secrets.get("GROQ_API_KEY"))  # API key read from env variable
-
+# client = Groq(
+#     api_key=st.secrets.get("GROQ_API_KEY") or os.getenv("GROQ_API_KEY")
+# )
 
 # # ===== Chat session state =====
 # if "messages" not in st.session_state:
@@ -694,3 +851,4 @@ with tab3:
 #         fertilizer_name = fert_mapping.get(fert_pred, "Unknown")
 
 #         st.success(f"🧪 Recommended Fertilizer: **{fertilizer_name}**")
+
