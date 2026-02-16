@@ -1,49 +1,4 @@
-Hugging Face's logo
-Hugging Face
-Models
-Datasets
-Spaces
-Community
-Docs
-Enterprise
-Pricing
 
-
-Spaces:
-durgesh1919
-/
-smartagrocare-ai
-
-
-like
-0
-
-Logs
-App
-Files
-Community
-Settings
-smartagrocare-ai
-/
-src
-/
-streamlit_app.py
-
-durgesh1919's picture
-durgesh1919
-Update src/streamlit_app.py
-eeae5c2
-verified
-2 days ago
-raw
-
-Copy download link
-history
-blame
-edit
-delete
-
-13.5 kB
 import streamlit as st
 import numpy as np
 from tensorflow.keras.models import load_model
