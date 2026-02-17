@@ -35,7 +35,9 @@ MODEL_PATH = os.path.join(
 @st.cache_resource
 def load_cnn_model():
     try:
-        model = load_model(MODEL_PATH, compile=False)
+        model_path = os.path.join(BASE_DIR, "Models", "Disease", "saved_model")
+        model = tf.keras.models.load_model(model_path)
+        # model = load_model(MODEL_PATH, compile=False)
 
         with open(os.path.join(BASE_DIR, "Models", "Disease", "class_indices.json")) as f:
             class_indices = json.load(f)
@@ -295,8 +297,8 @@ with tab1:
     if uploaded_file is not None:
         image_pil = Image.open(uploaded_file)
         st.image(image_pil, caption="Uploaded Image", width=250)
-        img = image_pil.resize((128, 128))
-        # img = image_pil.resize((224, 224))
+        # img = image_pil.resize((128, 128))
+        img = image_pil.resize((224, 224))
 
         img_array = image.img_to_array(img) / 255.0
         img_array = np.expand_dims(img_array, axis=0)
