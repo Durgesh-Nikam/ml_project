@@ -12,7 +12,8 @@ from keras.models import load_model
 import os
 import tensorflow as tf
 
-BASE_DIR = os.path.dirname(__file__)
+# BASE_DIR = os.path.dirname(__file__)
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
 MODEL_PATH = os.path.join(
