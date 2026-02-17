@@ -20,7 +20,8 @@ MODEL_PATH = os.path.join(
     BASE_DIR,
     "Models",
     "Disease",
-    "plant_disease_model.keras"
+    "saved_model"
+    # "plant_disease_model.keras"
 )
 
 # MODEL_PATH = os.path.join(
