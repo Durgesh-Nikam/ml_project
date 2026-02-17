@@ -19,8 +19,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 MODEL_PATH = os.path.join(
     BASE_DIR,
     "Models",
-    # "Disease",
-    "All_Trained_Models",
+    "Disease",
     "plant_disease_model.keras"
 )
 
