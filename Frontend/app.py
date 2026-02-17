@@ -33,6 +33,11 @@ MODEL_PATH = os.path.join(
 
 
 # # -------- Disease Model Loading --------
+def get_model_input_size(model):
+    shape = model.input_shape
+    return shape[1], shape[2]
+
+
 @st.cache_resource
 def load_cnn_model():
     try:
@@ -59,7 +64,9 @@ def load_cnn_model():
             'Tomato___Tomato_mosaic_virus','Tomato___Tomato_Yellow_Leaf_Curl_Virus'
         ]
 
-        return model, class_names
+        IMG_SIZE = get_model_input_size(model)
+        return model, class_names, IMG_SIZE
+
 
     except Exception as e:
         st.error("❌ ERROR LOADING CNN MODEL")
@@ -232,11 +239,13 @@ def load_regional_data():
 
 
 
-model, class_names = load_cnn_model()
+model, class_names, IMG_SIZE = load_cnn_model()
 
 crop_model, crop_mapping = load_crop_model()
 fert_model, fert_mapping = load_fertilizer_model()
 regional_df = load_regional_data()
+
+
 
 
 
@@ -337,11 +346,14 @@ with tab1:
     uploaded_file = st.file_uploader("Upload an image of the plant leaf", type=['jpg', 'jpeg', 'png'])
 
     if uploaded_file is not None:
-        image_pil = Image.open(uploaded_file)
+        image_pil = Image.open(uploaded_file).convert("RGB")
+
         st.image(image_pil, caption="Uploaded Image", width=250)
         # img = image_pil.resize((128, 128))
-        img = image_pil.resize((224, 224))
+        # img = image_pil.resize((224, 224))
+        img = image_pil.resize(IMG_SIZE)
 
+        
         img_array = image.img_to_array(img) / 255.0
         img_array = np.expand_dims(img_array, axis=0)
 
